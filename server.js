@@ -27,66 +27,67 @@ app.post("/loadEventDetails", upload.none(), (req, resp) => {
       let $ = cheerio.load(body);
 
       let MPOPlayers = [];
-      let MPORatings = [];
       let FPOPlayers = [];
-      let FPORatings = [];
       let title = $("#page-title").text();
 
       $("#tournament-stats-0")
-        .find("a")
+        .find("tr")
         .each(function(i, e) {
-          MPOPlayers[i] = $(this).text();
-        });
-
-      $("#tournament-stats-0")
-        .find(".player-rating")
-        .each(function(i, e) {
-          MPORatings[i] = $(this).text();
+          let player = $(this)
+            .find("a")
+            .text();
+          let rating = $(this)
+            .find(".player-rating")
+            .text();
+          let place = $(this)
+            .find(".place")
+            .text();
+          let roundScores = [];
+          $(this)
+            .find(".round")
+            .each(function(i, e) {
+              console.log($(this).text());
+              roundScores[i] = $(this).text();
+            });
+          MPOPlayers[i] = { [player]: { rating, place, roundScores } };
         });
 
       $("#tournament-stats-1")
-        .find("a")
+        .find("tr")
         .each(function(i, e) {
-          FPOPlayers[i] = $(this).text();
+          let player = $(this)
+            .find("a")
+            .text();
+          let rating = $(this)
+            .find(".player-rating")
+            .text();
+          let place = $(this)
+            .find(".place")
+            .text();
+          let roundScores = [];
+          $(this)
+            .find(".round")
+            .each(function(i, e) {
+              console.log($(this).text());
+              roundScores[i] = $(this).text();
+            });
+          FPOPlayers[i] = { [player]: { rating, place, roundScores } };
         });
 
-      $("#tournament-stats-1")
-        .find(".player-rating")
-        .each(function(i, e) {
-          FPORatings[i] = $(this).text();
-        });
+      console.log(MPOPlayers);
 
-      MPORatings = MPORatings.slice(1);
-      FPORatings = FPORatings.slice(1);
-
-      let amalgamatedMPO = [];
-      let amalgamatedFPO = [];
-
-      for (players = 0; players < MPOPlayers.length; players++) {
-        let object = {
-          playerName: MPOPlayers[players],
-          rating: MPORatings[players]
-        };
-        amalgamatedMPO.push(object);
-      }
-
-      for (players = 0; players < FPOPlayers.length; players++) {
-        let object = {
-          playerName: FPOPlayers[players],
-          rating: FPORatings[players]
-        };
-        amalgamatedFPO.push(object);
-      }
+      MPOPlayers = MPOPlayers.slice(1);
+      FPOPlayers = FPOPlayers.slice(1);
 
       dbo
         .collection("Tournaments")
-        .insertOne({ [title]: { MPO: amalgamatedMPO, FPO: amalgamatedFPO } });
+        .insertOne({ [title]: { MPO: MPOPlayers, FPO: FPOPlayers } });
 
       resp.send(
         JSON.stringify({
           success: true,
-          MPO: amalgamatedMPO,
-          FPO: amalgamatedFPO
+          MPO: MPOPlayers,
+          FPO: FPOPlayers
         })
       );
     }

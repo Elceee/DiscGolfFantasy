@@ -20,6 +20,7 @@ class App extends Component {
     if (body.success) {
       alert("Event Added");
       this.setState({ idInput: "" });
+      console.log(body.MPO);
     } else {
       alert("Maybe a problem");
       this.setState({ idInput: "" });
